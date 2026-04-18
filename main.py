@@ -1,4 +1,3 @@
-
 import oceandirect.OceanDirectAPI as od
 
 def test_connexion():
