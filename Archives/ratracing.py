@@ -29,7 +29,7 @@ diametre_faisceau = 2.0  # Diamètre du faisceau LED sur le galvo (en mm, à aju
 divergence = 0.02        # Divergence propre à la LED (en radians)
 
 # On va simuler les 3 états extrêmes de votre Red Pitaya : -1V, 0V (centre), et +1V
-tensions_test = [-1.0, 0.0, 1.0] 
+tensions_test = [-1.0, -0.5, 0.0, 0.5, 1.0] 
 
 plt.figure(figsize=(10, 6))
 

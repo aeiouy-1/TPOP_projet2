@@ -1,0 +1,2 @@
+created_at,scan_type,voltage_min,voltage_max,step_voltage,point_delay_s,x_points,y_points,scan_pattern
+2026-04-17T13:38:16,image_gray_area,-1.000,1.000,0.020,0.100,101,101,serpentine
