@@ -3,12 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import signal
 import os
+import shutil
 from natsort import natsorted
 import colour
 from matplotlib.ticker import MultipleLocator
 
 # --- 1. Paramètres à adapter ---
-DOSSIER_FICHIERS = "C:\\Users\Jejeb\OneDrive\Bureau\Génie Physique\TPOP\Projet 2\Code\TPOP_projet2\Spectro\\fibre_100um\d=26_5mm_prise2" 
+DOSSIER_FICHIERS = "Spectro/fibre_100um/d=26_5mm_prise2" 
 DELIMITEUR = "\t" 
 
 # Coupez les valeurs d'intensité en dessous de ce seuil pour éliminer le bruit du capteur.
@@ -23,6 +24,39 @@ conv_theta = 0.4244683686               # °spatial/°galvos
 
 # Calcul déphasage pour chaque incrémentation 
 d_theta =  dV / conv_V_to_angle_galvos * conv_theta *60    # ' (minute d'arc)/ incréments   
+
+
+def configure_article_style():
+    latex_is_available = shutil.which("latex") is not None
+
+    plt.rcParams.update(
+        {
+            "figure.dpi": 160,
+            "savefig.dpi": 300,
+            "axes.linewidth": 1.2,
+            "axes.labelsize": 18,
+            "axes.titlesize": 18,
+            "xtick.labelsize": 15,
+            "ytick.labelsize": 15,
+            "legend.fontsize": 14,
+            "lines.linewidth": 2.0,
+            "lines.markersize": 4.5,
+            "font.family": "serif",
+            "mathtext.fontset": "cm",
+            "text.usetex": latex_is_available,
+        }
+    )
+
+    if not latex_is_available:
+        plt.rcParams["font.serif"] = ["STIX Two Text", "Times New Roman", "DejaVu Serif"]
+
+
+configure_article_style()
+
+
+output_dir = "figure"
+os.makedirs(output_dir, exist_ok=True)
+figure_prefix = os.path.basename(os.path.normpath(DOSSIER_FICHIERS))
 
 
 
@@ -144,18 +178,24 @@ limitation = [-n/2*d_theta, n/2*d_theta, -1, 1]
 
 
 # --- 4. Affichage et Sauvegarde ---
-plt.figure(figsize=(10, 2.5))
-plt.plot()
-plt.imshow(image_1d, aspect='auto', extent= limitation) 
+fig_line, ax_line = plt.subplots(figsize=(10, 2.5))
+ax_line.imshow(image_1d, aspect='auto', extent= limitation) 
 #plt.title(f"Ligne Hyperspectrale ({len(fichiers)} pixels)")
-plt.yticks([])
-plt.xticks([-50,-40,-30,-20,-10,0,10,20,30,40,50])
-plt.xlabel("Angle d'incidence (\u03B1) [']")
-plt.tight_layout()
-plt.show()
+ax_line.set_yticks([])
+ax_line.set_xticks([-50,-40,-30,-20,-10,0,10,20,30,40,50])
+ax_line.set_xlabel(r"Angle d'incidence ($\alpha_x$) [']")
+fig_line.tight_layout()
 
-plt.imsave("ligne_whiskbroom_true_color.png", image_1d[0])
+line_pdf_path = os.path.join(output_dir, f"{figure_prefix}_ligne_rgb.pdf")
+line_png_path = os.path.join(output_dir, f"{figure_prefix}_ligne_rgb.png")
+# fig_line.savefig(line_pdf_path, format="pdf", bbox_inches="tight")
+# fig_line.savefig(line_png_path, format="png", bbox_inches="tight")
+print(f"Figure ligne RGB enregistrée dans : {os.path.abspath(line_pdf_path)}")
+print(f"Figure ligne RGB PNG enregistrée dans : {os.path.abspath(line_png_path)}")
+
+# plt.imsave(os.path.join(output_dir, f"{figure_prefix}_true_color_strip.png"), image_1d[0])
 print("Image True Color générée avec succès !")
+plt.show()
 
 
 # Création de la figure
@@ -168,16 +208,27 @@ ax1 = fig.add_subplot(gspec[1, 0])
 ax2 = fig.add_subplot(gspec[1, 1])
 
 # Création des titres de la figure
-ax0.set_xlabel("Angle d'incidence (\u03B1) [']")
-ax1.set_xlabel("\u03BB [nm]")
-ax1.set_ylabel("Intesité")
-ax2.set_xlabel("\u03BB [nm]")
-ax2.set_ylabel("Intesité")
+ax0.set_xlabel(r"Angle d'incidence ($\alpha_x$) [']")
+ax1.set_xlabel(r"$\lambda$ [nm]")
+ax1.set_ylabel("Intensité normalisée")
+ax2.set_xlabel(r"$\lambda$ [nm]")
+ax2.set_ylabel("Intensité normalisée")
 
 
 ax0.imshow(image_1d, aspect='auto', extent = limitation)
 ax0.get_yaxis().set_visible(False)
 ax0.xaxis.set_major_locator(MultipleLocator(10))
+ax0.tick_params(axis='x', which='both', direction='in')
 ax1.plot(donnees_spectrale[125][0], donnees_spectrale[125][1]/nb_max)
 ax2.plot(donnees_spectrale[276][0], donnees_spectrale[276][1]/nb_max)
+ax1.tick_params(axis='both', which='both', direction='in')
+ax2.tick_params(axis='both', which='both', direction='in')
+
+composite_pdf_path = os.path.join(output_dir, f"{figure_prefix}_spectres_rgb.pdf")
+composite_png_path = os.path.join(output_dir, f"{figure_prefix}_spectres_rgb.png")
+# fig.savefig(composite_pdf_path, format="pdf", bbox_inches="tight")
+# fig.savefig(composite_png_path, format="png", bbox_inches="tight")
+print(f"Figure composite enregistrée dans : {os.path.abspath(composite_pdf_path)}")
+print(f"Figure composite PNG enregistrée dans : {os.path.abspath(composite_png_path)}")
+
 plt.show()
