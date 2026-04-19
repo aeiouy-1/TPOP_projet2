@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy import signal
+from scipy import integrate
 import os
 import shutil
 from natsort import natsorted
@@ -83,6 +83,7 @@ cmfs = colour.MSDS_CMFS['CIE 1931 2 Degree Standard Observer']
 # Illuminant D65 (lumière du jour standard, utile pour la conversion spectrale)
 illuminant = colour.SDS_ILLUMINANTS['D65']
 donnees_spectrale = []
+integrale = []
 
 nb_max = 0
 
@@ -102,9 +103,13 @@ for fichier in fichiers:
     max_local = max(intensites) 
     nb_max = max(nb_max, max_local)
 
+    integrale.append(integrate.simpson(intensites, longueurs_onde))
     
+
     # Élimination du bruit de fond (tout ce qui est sous le seuil devient 0)
     intensites = np.maximum(intensites - SEUIL_DE_BRUIT, 0)
+
+    
 
 
     # Création d'un objet Distribution Spectrale compréhensible par la librairie
@@ -214,15 +219,31 @@ ax1.set_ylabel("Intensité normalisée")
 ax2.set_xlabel(r"$\lambda$ [nm]")
 ax2.set_ylabel("Intensité normalisée")
 
+DEL_verte = donnees_spectrale[125]
+DEL_verte[1] = DEL_verte[1]/nb_max
+DEL_bleu = donnees_spectrale[278]
+DEL_bleu[1] = DEL_bleu[1]/nb_max
+
+pic_vert = np.where(DEL_verte[1] == np.max(DEL_verte[1]))
+pic_vert = pic_vert[0]
+print(pic_vert)
+pic_bleu = np.where(DEL_bleu[1] == np.max(DEL_bleu[1]))
+pic_bleu = pic_bleu[0]
+print(pic_bleu)
+
 
 ax0.imshow(image_1d, aspect='auto', extent = limitation)
 ax0.get_yaxis().set_visible(False)
 ax0.xaxis.set_major_locator(MultipleLocator(10))
 ax0.tick_params(axis='x', which='both', direction='in')
-ax1.plot(donnees_spectrale[125][0], donnees_spectrale[125][1]/nb_max)
-ax2.plot(donnees_spectrale[276][0], donnees_spectrale[276][1]/nb_max)
+ax1.plot(DEL_verte[0], DEL_verte[1], color = "k")
+ax1.vlines(DEL_verte[0][pic_vert], ymin = 0, ymax = 1, colors = "#42ff00" , label = f"$\lambda$ = {DEL_verte[0][pic_vert]} [nm]")
+ax2.plot(DEL_bleu[0], DEL_bleu[1], color = "k")
+ax2.vlines(DEL_bleu[0][pic_bleu], ymin = 0, ymax = 1, colors = "#007fff" , label = f"$\lambda$ = {DEL_bleu[0][pic_bleu]} [nm]")
 ax1.tick_params(axis='both', which='both', direction='in')
 ax2.tick_params(axis='both', which='both', direction='in')
+ax1.legend()
+ax2.legend()
 
 composite_pdf_path = os.path.join(output_dir, f"{figure_prefix}_spectres_rgb.pdf")
 composite_png_path = os.path.join(output_dir, f"{figure_prefix}_spectres_rgb.png")
@@ -232,3 +253,11 @@ print(f"Figure composite enregistrée dans : {os.path.abspath(composite_pdf_path
 print(f"Figure composite PNG enregistrée dans : {os.path.abspath(composite_png_path)}")
 
 plt.show()
+
+
+"""
+intens = np.array(integrale/np.max(integrale))
+plt.plot(intens)
+plt.show()
+"""
+
