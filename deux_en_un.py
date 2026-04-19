@@ -134,14 +134,16 @@ def build_output_path(profile_csv_path, spectrum_folder):
 
 
 def plot_combined_figure(profile_x, profile_y, profile_xlabel, rgb_strip, rgb_extent, output_path):
+    annotation_fontsize = plt.rcParams["axes.labelsize"]
     figure, (ax_profile, ax_rgb) = plt.subplots(
         2,
         1,
-        figsize=(10.0, 5.5),
+        figsize=(10.0, 5.0),
         sharex=True,
-        gridspec_kw={"height_ratios": [3.0, 1.0]},
-        constrained_layout=True,
+        gridspec_kw={"height_ratios": [1.0, 1.0]},
+        constrained_layout=False,
     )
+    figure.subplots_adjust(left=0.12, right=0.98, top=0.97, bottom=0.16, hspace=0.08)
 
     ax_profile.plot(
         profile_x,
@@ -151,16 +153,36 @@ def plot_combined_figure(profile_x, profile_y, profile_xlabel, rgb_strip, rgb_ex
         markerfacecolor="white",
         markeredgewidth=1.1,
     )
-    ax_profile.set_ylabel("Intensite normalisee")
+    ax_profile.set_ylabel("Intensité normalisée")
     ax_profile.xaxis.set_major_locator(MultipleLocator(10))
     ax_profile.minorticks_on()
     ax_profile.tick_params(axis="both", which="both", direction="in")
+    ax_profile.annotate(
+        "(a)",
+        xy=(0.02, 0.95),
+        xycoords="axes fraction",
+        ha="left",
+        va="top",
+        fontsize=annotation_fontsize,
+        annotation_clip=False,
+        bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.9, "pad": 1.5},
+    )
 
     ax_rgb.imshow(rgb_strip, aspect="auto", extent=rgb_extent)
     ax_rgb.set_xlabel(profile_xlabel)
     ax_rgb.set_yticks([])
     ax_rgb.xaxis.set_major_locator(MultipleLocator(10))
-    ax_rgb.tick_params(axis="x", which="both", direction="in")
+    ax_rgb.tick_params(axis="x", which="both", direction="out", top=False)
+    ax_rgb.annotate(
+        "(b)",
+        xy=(0.02, 0.95),
+        xycoords="axes fraction",
+        ha="left",
+        va="top",
+        fontsize=annotation_fontsize,
+        annotation_clip=False,
+        bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.9, "pad": 1.5},
+    )
 
     x_min = min(float(profile_x.min()), rgb_extent[0])
     x_max = max(float(profile_x.max()), rgb_extent[1])
